@@ -39,6 +39,3 @@ Open `http://localhost:3000`.
 
 - Email: `admin@menu.local`
 - Password: `admin12345`
-
-You can change these in `scripts/seed-admin.mjs`.
-
