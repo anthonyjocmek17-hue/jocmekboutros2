@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Table 1 login — save QR as PNG</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 40rem;
+        margin: 2rem auto;
+        padding: 0 1rem;
+        line-height: 1.45;
+      }
+      textarea {
+        width: 100%;
+        min-height: 6rem;
+        font: 12px/1.3 ui-monospace, monospace;
+        padding: 0.5rem;
+        box-sizing: border-box;
+      }
+      button {
+        margin-top: 0.75rem;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      #out {
+        margin-top: 1.5rem;
+        text-align: center;
+      }
+      #out canvas {
+        max-width: 100%;
+        height: auto;
+        border: 1px solid #ccc;
+      }
+      .hint {
+        font-size: 0.85rem;
+        color: #444;
+        margin-top: 0.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Table 1 login QR (PNG)</h1>
+    <p>
+      This page builds a <strong>scannable QR</strong> from the <strong>full signed URL</strong> (the same one your app uses for
+      auto-login). Get that link from the app: sign in as <strong>admin</strong> →
+      <strong>/admin/qr/table-1</strong> → open <strong>“Show full URL (for testing)”</strong> → copy the whole line → paste
+      below → <strong>Generate</strong> → right-click the image → <strong>Save image as…</strong> (or use Download PNG).
+    </p>
+    <label for="u"><strong>Paste full URL</strong></label>
+    <textarea id="u" placeholder="http://localhost:3000/login/table?t=…"></textarea>
+    <div>
+      <button type="button" id="go">Generate</button>
+      <button type="button" id="dl" disabled>Download PNG</button>
+    </div>
+    <p class="hint">
+      The QR must use the same host your guests use (match <code>NEXTAUTH_URL</code>). For phones on your Wi‑Fi, that is often
+      <code>http://YOUR_PC_IP:3000</code>, not <code>localhost</code>.
+    </p>
+    <div id="out"></div>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+    <script>
+      const ta = document.getElementById("u");
+      const out = document.getElementById("out");
+      const go = document.getElementById("go");
+      const dl = document.getElementById("dl");
+      let lastDataUrl = "";
+
+      go.addEventListener("click", async () => {
+        const text = ta.value.trim();
+        out.innerHTML = "";
+        dl.disabled = true;
+        lastDataUrl = "";
+        if (!text || !text.includes("/login/table")) {
+          alert("Paste the full /login/table?t=… URL from the admin QR page.");
+          return;
+        }
+        try {
+          const canvas = document.createElement("canvas");
+          await QRCode.toCanvas(canvas, text, { width: 512, margin: 2, errorCorrectionLevel: "M" });
+          out.appendChild(canvas);
+          lastDataUrl = canvas.toDataURL("image/png");
+          dl.disabled = false;
+        } catch (e) {
+          alert("Could not build QR: " + (e && e.message ? e.message : String(e)));
+        }
+      });
+
+      dl.addEventListener("click", () => {
+        if (!lastDataUrl) return;
+        const a = document.createElement("a");
+        a.href = lastDataUrl;
+        a.download = "table-1-login-qr.png";
+        a.click();
+      });
+    </script>
+  </body>
+</html>
